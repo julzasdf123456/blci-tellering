@@ -355,6 +355,14 @@ public class ObjectHelpers {
         }
     }
     
+    public static String tableValueValidator(double regex) {
+        if (regex > 0) {
+            return regex + "";
+        } else {
+            return "";
+        }
+    }
+    
     public static void main(String[] args) {
         
     }

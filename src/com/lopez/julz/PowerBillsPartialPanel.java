@@ -24,6 +24,7 @@ import helpers.PowerBillPrint;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -240,6 +241,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
         partialFormatter.setCommitsOnValidEdit(true);
         suggestedPartialAmount = new javax.swing.JFormattedTextField(partialFormatter);
         jLabel14 = new javax.swing.JLabel();
+        previewCharges = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel4 = new javax.swing.JLabel();
         advancedSearch = new javax.swing.JButton();
@@ -337,13 +339,13 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(orNumberField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                        .addComponent(orNumberField, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(unlockOrNumberBtn))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(orDateField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                        .addComponent(orDateField, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                         .addGap(63, 63, 63)))
                 .addContainerGap())
         );
@@ -454,6 +456,15 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
         jLabel14.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel14.setText("Suggested Partial");
 
+        previewCharges.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        previewCharges.setText("...");
+        previewCharges.setToolTipText("Preview Charges Distribution");
+        previewCharges.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previewChargesActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -469,24 +480,23 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                         .addComponent(totalAmountPaid, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jSeparator5)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(46, 46, 46)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(addCheckButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(clearChecksBtn))
-                            .addComponent(cashPaymentField, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                        .addGap(56, 56, 56)
+                        .addComponent(addCheckButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clearChecksBtn))
                     .addComponent(transactBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(suggestedPartialAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(cashPaymentField)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(previewCharges))
+                            .addComponent(suggestedPartialAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -499,7 +509,8 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(cashPaymentField, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cashPaymentField, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(previewCharges, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
@@ -517,7 +528,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(transactBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(60, 60, 60))
         );
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -654,7 +665,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 613, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -949,6 +960,65 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_suggestedPartialAmountKeyReleased
 
+    private void previewChargesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewChargesActionPerformed
+        int selectedSize = selectedBills.size();
+        
+        if (selectedSize > 1) {
+            Notifiers.showErrorMessage("Multiple Selection Not Allowed", "Please make sure you only selected 1 bill.");
+        } else if (selectedSize < 1) {
+            Notifiers.showErrorMessage("No Bill Selected", "Select at least 1 bill");
+        } else {  
+            Bills bill = selectedBills.get(0);
+            BillMirror billMirror = BillMirrorDao.getOne(connection, bill.getAccountNumber(), bill.getServicePeriod());
+            double pdAmnt = ObjectHelpers.doubleStringNull(getTotalAmount() + "");
+            boolean isNewBm = false;
+            if (billMirror != null) {
+                isNewBm = false;
+            } else {
+                billMirror = new BillMirror();
+                billMirror.setId(ObjectHelpers.generateIDandRandString());
+                billMirror.setServiceDateFrom(bill.getServiceDateFrom());
+                billMirror.setServiceDateTo(bill.getServiceDateTo());
+                billMirror.setDueDate(bill.getDueDate());
+                billMirror.setNetAmount(bill.getNetAmount());
+                billMirror.setBillNumber(bill.getBillNumber());
+                isNewBm = true;
+            }
+            double remainingAmount = pdAmnt;
+            double termedPayments = ObjectHelpers.doubleStringNull(bill.getTermedPayments());
+            // SET TERMED PAYMENT FIRST
+            if (termedPayments > 0) {
+                remainingAmount = BillMirrorDao.populateTermedPaymentAmountUpdate(pdAmnt, bill, billMirror);
+            }
+
+            if (remainingAmount >= BillsDao.getOthersAmount(bill)) {
+                // IF PAID AMOUNT IS GREATER THAN OTHERS AMOUNT, PAY OTHER AMOUNTS FIRST
+                remainingAmount = BillMirrorDao.populateOtherAmountUpdate(pdAmnt, bill, billMirror);
+
+                if (remainingAmount > 0) {
+                    BillMirrorDao.populateBilledAmountUpdate(remainingAmount, bill, billMirror);
+                }
+            } else {
+                // IF PAID AMOUNT IS LESS THAN OTHERS AMOUNT, PAY BILLED AMOUNT FIRST
+                BillMirrorDao.populateBilledAmountUpdate(remainingAmount, bill, billMirror);
+            }
+            
+            JDialog dialog = new JDialog();
+            dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+            Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (int) size.getWidth();
+            int y = (int) size.getHeight();
+            dialog.setLocation(x/5, y/8);
+            dialog.setTitle("Partial Payment Distribution");
+
+            PreviewPartialDistribution distributionPanel = new PreviewPartialDistribution(bill, billMirror);
+
+            dialog.add(distributionPanel);
+            dialog.pack();
+            dialog.setVisible(true);
+        }
+    }//GEN-LAST:event_previewChargesActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField accountNumber;
@@ -990,6 +1060,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
     private javax.swing.JTextField meterNumber;
     private javax.swing.JTextField orDateField;
     private javax.swing.JTextField orNumberField;
+    private javax.swing.JButton previewCharges;
     private javax.swing.JFormattedTextField suggestedPartialAmount;
     private javax.swing.JFormattedTextField totalAmountPaid;
     private javax.swing.JButton transactBtn;
