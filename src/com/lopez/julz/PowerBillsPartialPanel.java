@@ -1599,7 +1599,9 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 double remainingBalance = ObjectHelpers.doubleStringNull(bill.getBalance());
                 double pdAmnt = ObjectHelpers.doubleStringNull(paidBill.getNetAmount());
                 remainingBalance = remainingBalance - pdAmnt;
-                bill.setPaidAmount(paidBill.getNetAmount());
+                double existingPaidAmnt = ObjectHelpers.doubleStringNull(bill.getPaidAmount());
+                existingPaidAmnt = existingPaidAmnt + pdAmnt;
+                bill.setPaidAmount(existingPaidAmnt + "");
                 bill.setBalance(ObjectHelpers.roundTwoNoComma(remainingBalance));
                 BillsDao.updateBills(connection, bill);
                 
