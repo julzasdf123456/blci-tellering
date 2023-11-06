@@ -9,7 +9,6 @@ import db.BillMirrorDao;
 import db.BillsDao;
 import db.CollectiblesDao;
 import db.CollectionDateAdjustmentsDao;
-import db.DCRSummaryTransactionsDao;
 import db.DatabaseConnection;
 import db.OCLMonthlyDao;
 import db.ORAssigningDao;
@@ -26,7 +25,6 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -83,7 +81,6 @@ import pojos.BillMirror;
 import pojos.Bills;
 import pojos.CheckPayments;
 import pojos.Collectibles;
-import pojos.DCRSummaryTransactions;
 import pojos.OCLMonthly;
 import pojos.ORAssigning;
 import pojos.PaidBills;
@@ -699,15 +696,25 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_clearBtnActionPerformed
 
     private void viewAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewAccountButtonActionPerformed
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            if (activeAccount != null) {
-                try {
-                    Desktop.getDesktop().browse(new URI(ConfigFileHelpers.VIEW_ACCOUNT_URL + activeAccount.getId()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+//            if (activeAccount != null) {
+//                try {
+//                    Desktop.getDesktop().browse(new URI(ConfigFileHelpers.VIEW_ACCOUNT_URL + activeAccount.getId()));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+        JDialog formDialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(getParent()));
+        formDialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        formDialog.setLocation(50, 50);
+        formDialog.setTitle("View Account");
+
+        AccountBrowser browserPanel = new AccountBrowser(activeAccount.getId());
+
+        formDialog.add(browserPanel);
+        formDialog.pack();
+        formDialog.setVisible(true);
     }//GEN-LAST:event_viewAccountButtonActionPerformed
 
     private void unlockOrNumberBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unlockOrNumberBtnActionPerformed
@@ -1634,12 +1641,12 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 double termedPayments = ObjectHelpers.doubleStringNull(bill.getTermedPayments());
                 // SET TERMED PAYMENT FIRST
                 if (termedPayments > 0) {
-                    remainingAmount = BillMirrorDao.populateTermedPaymentAmountUpdate(pdAmnt, bill, billMirror);
+                    remainingAmount = BillMirrorDao.populateTermedPaymentAmountUpdate(remainingAmount, bill, billMirror);
                 }
                 
                 if (remainingAmount >= BillsDao.getOthersAmount(bill)) {
                     // IF PAID AMOUNT IS GREATER THAN OTHERS AMOUNT, PAY OTHER AMOUNTS FIRST
-                    remainingAmount = BillMirrorDao.populateOtherAmountUpdate(pdAmnt, bill, billMirror);
+                    remainingAmount = BillMirrorDao.populateOtherAmountUpdate(remainingAmount, bill, billMirror);
                     
                     if (remainingAmount > 0) {
                         BillMirrorDao.populateBilledAmountUpdate(remainingAmount, bill, billMirror);

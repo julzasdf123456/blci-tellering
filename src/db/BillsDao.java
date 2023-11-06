@@ -11,11 +11,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import pojos.Bills;
+import pojos.Collectibles;
+import pojos.Ledger;
 
 /**
  *
@@ -519,6 +520,19 @@ public class BillsDao {
         }
     }
     
+    public static double getSurchargeFromRaw(String dueDate, double value) {
+        try {
+            if (ObjectHelpers.isAfterToday(dueDate)) {
+                return ObjectHelpers.roundTwoNoCommaDouble((value * .0226));
+            } else {
+                return 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
     public static double getInterest(Bills bill) {
         try {
             DatabaseConnection db = new DatabaseConnection();
@@ -604,6 +618,61 @@ public class BillsDao {
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
+        }
+    }
+    
+    public static List<Ledger> getLedger(Connection con, String accountId) {
+        try {
+            List<Ledger> ledgers = new ArrayList<>();
+            
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM " + billsTableName +
+                    " WHERE AccountNumber=? " +
+                    "ORDER BY ServicePeriod DESC");
+            ps.setString(1, accountId);
+            ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                ledgers.add(new Ledger(rs.getString("BillNumber"),
+                        rs.getString("ServicePeriod"), 
+                        rs.getString("PreviousKwh"), 
+                        rs.getString("PresentKwh"),
+                        rs.getString("KwhUsed"),
+                        rs.getString("NetAmount"),
+                        rs.getString("PaidAmount"),
+                        rs.getString("Balance"),
+                        rs.getString("DueDate"))
+                );
+            }
+            
+            return ledgers;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public static List<Collectibles> getTermedPaymentProfiles(Connection con, String accountId) {
+        try {
+            List<Collectibles> termedPaymentProfiles = new ArrayList<>();
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM Billing_Collectibles WHERE AccountNumber=? ORDER BY created_at DESC", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ps.setString(1, accountId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                termedPaymentProfiles.add(new Collectibles(
+                        rs.getString("id"),
+                        rs.getString("AccountNumber"), 
+                        rs.getString("Balance"), 
+                        rs.getString("Notes"), 
+                        rs.getString("created_at"),
+                        rs.getString("updated_at")
+                )) ;
+            }
+            
+            return termedPaymentProfiles;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
     

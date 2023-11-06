@@ -20,10 +20,8 @@ import helpers.ConfigFileHelpers;
 import helpers.Notifiers;
 import helpers.ObjectHelpers;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -41,15 +39,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.math.RoundingMode;
-import java.net.URI;
 import java.sql.Connection;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -76,6 +75,7 @@ import pojos.BillMirror;
 import pojos.Bills;
 import pojos.CheckPayments;
 import pojos.Collectibles;
+import pojos.MultipleAccountAddIns;
 import pojos.MultipleAccountBills;
 import pojos.OCLMonthly;
 import pojos.ORAssigning;
@@ -104,11 +104,12 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
      * ACTIVE SELECTIONS
      */
     public List<MultipleAccountBills> billsList;
+    public List<MultipleAccountAddIns> addOns;
     
     /**
      * Bills Table 
      */
-    Object[] columnNames = {"Account No", "Account Name", "Billing Month", "Due Date", "Amount Due", "Surcharge", "Total Amount Due"};
+    Object[] columnNames = {"Payment For", "Account No", "Account Name", "Billing Month", "Due Date", "Amount Due", "Surcharge", "Total Amount Due", "Index"};
     DefaultTableModel model;
     
     /**
@@ -118,6 +119,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     int nextOrNumber = 0;
     double totalAmountPayable = 0;
     double totalSurcharge = 0;
+    double totalReconnectionFee = 0;
     
     /**
      * Checks
@@ -145,6 +147,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
         
         
         billsList = new ArrayList<>();
+        addOns = new ArrayList<>();
         fetchOR();
         
         checkLists = new ArrayList<>();
@@ -1248,15 +1251,33 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
             addBillsBtn.setText("Add Bills");
             
             addBillsBtn.addActionListener((e) -> {
+                if (account.getAccountStatus() != null && account.getAccountStatus().equals("DISCONNECTED")) {
+                    if (JOptionPane.showConfirmDialog(null, "This account has been DISCONNECTED. Do you want to automatically add Reconnection Fee?", "Attach Reconnection Fee", JOptionPane.WARNING_MESSAGE) == 0) {
+                        addOns.add(new MultipleAccountAddIns(account.getOldAccountNo(), account.getId(), account.getServiceAccountName(), "", "Reconnection Fee", 56));
+                    }
+                }
+                
                 for (int i=0; i<listSize; i++) {
                     if ((Boolean) model.getValueAt(i, 0)) {
                         Bills bill = billsList.get(i);                        
                         double surcharge = 0;
+                        boolean isRemovable = false;
                         if (bill.getSurchargeWaived() != null && bill.getSurchargeWaived().equals("APPROVED")) {
                             surcharge = 0;
                         } else {
                             surcharge = Double.valueOf(ObjectHelpers.roundTwoNoComma(BillsDao.getSurcharge(bill) + ""));
                         }
+                        
+                        if (ObjectHelpers.isAfterDue(bill)) {
+                            if (bill.getItem3() != null && bill.getItem3().equals("SKIP_AUTO")) {
+                                isRemovable = true;
+                            } else {                    
+                                isRemovable = false;
+                            }
+                        } else {
+                            isRemovable = true;
+                        }
+                        
                         MultipleAccountBills multipleAccountBills = new MultipleAccountBills(bill.getId(), 
                                 account.getServiceAccountName(), 
                                 account.getOldAccountNo(), 
@@ -1266,7 +1287,11 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
                                 bill.getDueDate(), 
                                 bill.getBalance(), 
                                 surcharge + "", 
-                                ObjectHelpers.roundTwoNoComma(ObjectHelpers.getTotals(Double.valueOf(bill.getBalance()), surcharge)));
+                                ObjectHelpers.roundTwoNoComma(ObjectHelpers.getTotals(Double.valueOf(bill.getBalance()), surcharge)),
+                                isRemovable,
+                                0,
+                                0
+                        );
                         
                         if (this.billsList.stream().map(MultipleAccountBills::getBillId).anyMatch(multipleAccountBills.getBillId()::equals)) {
                             
@@ -1329,10 +1354,15 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
         }
     }
     
+    public double getReconnectionFee(MultipleAccountBills mb) {
+        return ObjectHelpers.roundTwoNoCommaDouble(mb.getReconnectionFee() + mb.getReconnectionFeeVAT());
+    }
+    
     public void populateBillsTable() {
         try {
             int billsSize = billsList.size();
-            model = new DefaultTableModel(columnNames, billsSize) {
+            int addOnsSize = addOns.size();
+            model = new DefaultTableModel(columnNames, billsSize + addOnsSize) {
                 @Override
                 public boolean isCellEditable(int row, int column) {
                     return false;
@@ -1341,21 +1371,46 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
             
             totalAmountPayable = 0;
             totalSurcharge = 0;
+            totalReconnectionFee = 0;
+            int billCounter = 0;
             for (int i=0; i<billsSize; i++) {
                 MultipleAccountBills bill = billsList.get(i);
-                model.setValueAt(bill.getAccountNumber(), i, 0);
-                model.setValueAt(bill.getAccountName(), i, 1);                
-                model.setValueAt(ObjectHelpers.formatReadableDate(bill.getBillingMonth()), i, 2);
-                model.setValueAt(ObjectHelpers.formatShortDate(bill.getDueDate()), i, 3);
-                model.setValueAt(bill.getAmountDue(), i, 4);
-                model.setValueAt(bill.getSurcharge(), i, 5);
-                model.setValueAt(bill.getTotalAmountDue(), i, 6);
+                model.setValueAt("BILL", i, 0);
+                model.setValueAt(bill.getAccountNumber(), i, 1);
+                model.setValueAt(bill.getAccountName(), i, 2);                
+                model.setValueAt(ObjectHelpers.formatReadableDate(bill.getBillingMonth()), i, 3);
+                model.setValueAt(ObjectHelpers.formatShortDate(bill.getDueDate()), i, 4);
+                model.setValueAt(bill.getAmountDue(), i, 5);
+                model.setValueAt(bill.getSurcharge(), i, 6);
+                model.setValueAt(bill.getTotalAmountDue(), i, 7);
+                model.setValueAt(i, i, 8);
                 
                 totalAmountPayable += ObjectHelpers.doubleStringNull(bill.getAmountDue());
                 totalSurcharge += ObjectHelpers.doubleStringNull(bill.getSurcharge());
+                billCounter = i;
+            }
+            
+            billCounter += 1;
+            for (int x=0; x<addOnsSize; x++) {
+                MultipleAccountAddIns addOn = addOns.get(x);
+                model.setValueAt("ADD-ON", (x + billCounter), 0);
+                model.setValueAt(addOn.getAccountNumber(), (x + billCounter), 1);
+                model.setValueAt(addOn.getAccountName(), (x + billCounter), 2);                
+                model.setValueAt(addOn.getAddOnName(), (x + billCounter), 3);
+                model.setValueAt("", (x + billCounter), 4);
+                model.setValueAt("", (x + billCounter), 5);
+                model.setValueAt("", (x + billCounter), 6);
+                model.setValueAt(addOn.getAddOnAmount(), (x + billCounter), 7);
+                model.setValueAt(x, (x + billCounter), 8);
+                
+                totalReconnectionFee += ObjectHelpers.doubleStringNull(addOn.getAddOnAmount() + "");
             }
             
             billsTable.setModel(model);
+            
+            billsTable.getColumnModel().getColumn(8).setMinWidth(0);
+            billsTable.getColumnModel().getColumn(8).setMaxWidth(0);
+            billsTable.getColumnModel().getColumn(8).setWidth(0);
             
             cashPaymentField.setValue(getTotalPayable());
             cashPaymentField.requestFocus();
@@ -1370,7 +1425,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     
     public Double getTotalPayable() {
         try {
-            double total = totalAmountPayable + totalSurcharge;
+            double total = totalAmountPayable + totalSurcharge + totalReconnectionFee;
             return total;
         } catch (Exception e) {
             e.printStackTrace();
@@ -1414,17 +1469,49 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
         try {
             JPopupMenu popupMenu = new JPopupMenu();
             JMenuItem removeItem = new JMenuItem("Remove Item");
+            JMenuItem viewAccount = new JMenuItem("View Account");
             
-            removeItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        billsList.remove(table.getSelectedRow());
-                        populateBillsTable();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        Notifiers.showErrorMessage("Error removing item", ex.getMessage());
+            removeItem.addActionListener((ActionEvent e) -> {
+                try {
+                    int index = Integer.parseInt(table.getValueAt(table.getSelectedRow(), 8).toString());
+                    if (table.getValueAt(table.getSelectedRow(), 0).toString().equals("BILL")) {
+                        if (billsList.get(index).isRemovable()) {
+                            billsList.remove(index);
+                        } else {
+                            Notifiers.showErrorMessage("Not Allowed", "Removing bill that's beyond due date is prohibited, unless allowed by the management.");
+                        }
+                    } else {
+                        addOns.remove(index);
                     }
+                    populateBillsTable();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Notifiers.showErrorMessage("Error removing item", ex.getMessage());
+                }
+            });
+            
+            viewAccount.addActionListener((ActionEvent e) -> {
+                try {
+                    JDialog formDialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(getParent()));
+                    formDialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+                    formDialog.setLocation(50, 50);
+                    formDialog.setTitle("View Account");
+                    
+                    int index = Integer.parseInt(table.getValueAt(table.getSelectedRow(), 8).toString());
+                    String accountId = "";
+                    if (table.getValueAt(table.getSelectedRow(), 0).toString().equals("BILL")) {
+                        accountId = billsList.get(index).getAccountId();
+                    } else {
+                        accountId = addOns.get(index).getAccountId();
+                    }
+                    
+                    AccountBrowser browserPanel = new AccountBrowser(accountId);
+                    
+                    formDialog.add(browserPanel);
+                    formDialog.pack();
+                    formDialog.setVisible(true);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             });
                     
@@ -1453,6 +1540,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
                 }
             });
             popupMenu.add(removeItem);
+            popupMenu.add(viewAccount);
             table.setComponentPopupMenu(popupMenu);
         } catch (Exception e) {
             e.printStackTrace();
@@ -1461,7 +1549,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     
     public void transact() {
         try {   
-            if (getTotalAmount() >= (totalAmountPayable + totalSurcharge)) {
+            if (getTotalAmount() >= (totalAmountPayable + totalSurcharge + totalReconnectionFee)) {
                 String paymentUsed = "";
                 double[] checksRemains = new double[0];
                 int checkIndex = 0;
@@ -1630,6 +1718,51 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
                                 }                                
                             }
                         }
+                    }
+                    
+                    /**
+                     * =========================================================
+                     * SAVE ADDONS IF THERE ARE ANY
+                     * =========================================================
+                     */
+                    int addInsId = getIndexOfSelectedList(multipleAccountBills.getAccountId(), addOns);
+                    
+                    if (addInsId > -1) {
+                        MultipleAccountAddIns addIns = addOns.get(addInsId);
+                        
+                        String transId = i + ObjectHelpers.getTimeInMillis();
+                        TransactionIndex transaction = new TransactionIndex(
+                                transId,
+                                office + "-" + transId,
+                                addIns.getAccountName(),
+                                addIns.getAddOnName() + " of " + addIns.getAccountName(),
+                                paidBill.getORNumber(),
+                                ObjectHelpers.getSqlDate(),
+                                0 + "",
+                                0 + "",
+                                ObjectHelpers.roundTwoNoComma(addIns.getAddOnAmount() + ""),
+                                null,
+                                login.getId(),
+                                null,
+                                null,
+                                null,
+                                addIns.getAddOnName(),
+                                paymentUsed,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                addIns.getAddOnName(),
+                                null,
+                                null, 
+                                null,
+                                paidBill.getAccountNumber(),
+                                ObjectHelpers.getCurrentTimestamp(),
+                                ObjectHelpers.getCurrentTimestamp()
+                        );
+
+                        TransactionIndexDao.insert(connection, transaction);
                     }
                     
                     /**
@@ -1918,8 +2051,25 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     
     public void resetForm() {
         billsList.clear();
+        addOns.clear();
         totalAmountPayable = 0;
         totalSurcharge = 0;
+        totalReconnectionFee = 0;
         checkLists.clear();
+        cashPaymentField.setValue(0);
+    }
+    
+    public int getIndexOfSelectedList(String regex, List<MultipleAccountAddIns> values) {
+        try {
+            int index = IntStream.range(0, values.size())
+                .filter(i -> Objects.equals(values.get(i).getAccountId(), regex))
+                .findFirst()
+                .orElse(-1);
+            
+            return index;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 }

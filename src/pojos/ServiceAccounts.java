@@ -60,11 +60,14 @@ public class ServiceAccounts {
     public String MemberConsumerId;
     public String DistributionAccountCode;
     public String TownCode;
+    public String Zone;
+    public String Lifeliner;
+    public String Item1;
 
     public ServiceAccounts() {
     }
 
-    public ServiceAccounts(String id, String ServiceAccountName, String Town, String Barangay, String Purok, String AccountType, String AccountStatus, String ContactNumber, String EmailAddress, String ServiceConnectionId, String MeterDetailsId, String TransformerDetailsId, String PoleNumber, String AreaCode, String BlockCode, String SequenceCode, String Feeder, String ComputeType, String Organization, String OrganizationParentAccount, String GPSMeter, String OldAccountNo, String UserId, String MeterReader, String GroupCode, String ForDistribution, String Multiplier, String Coreloss, String Main, String Evat5Percent, String Ewt2Percent, String AccountCount, String ConnectionDate, String LatestReadingDate, String DateDisconnected, String DateTransfered, String SeniorCitizen, String AccountPaymentType, String Latitude, String Longitude, String AccountRetention, String AccountExpiration, String DurationInMonths, String Contestable, String NetMetered, String Notes, String Migrated, String MemberConsumerId, String DistributionAccountCode, String TownCode) {
+    public ServiceAccounts(String id, String ServiceAccountName, String Town, String Barangay, String Purok, String AccountType, String AccountStatus, String ContactNumber, String EmailAddress, String ServiceConnectionId, String MeterDetailsId, String TransformerDetailsId, String PoleNumber, String AreaCode, String BlockCode, String SequenceCode, String Feeder, String ComputeType, String Organization, String OrganizationParentAccount, String GPSMeter, String OldAccountNo, String UserId, String MeterReader, String GroupCode, String ForDistribution, String Multiplier, String Coreloss, String Main, String Evat5Percent, String Ewt2Percent, String AccountCount, String ConnectionDate, String LatestReadingDate, String DateDisconnected, String DateTransfered, String SeniorCitizen, String AccountPaymentType, String Latitude, String Longitude, String AccountRetention, String AccountExpiration, String DurationInMonths, String Contestable, String NetMetered, String Notes, String Migrated, String MemberConsumerId, String DistributionAccountCode, String TownCode, String Zone, String Lifeliner, String Item1) {
         this.id = id;
         this.ServiceAccountName = ServiceAccountName;
         this.Town = Town;
@@ -115,6 +118,34 @@ public class ServiceAccounts {
         this.MemberConsumerId = MemberConsumerId;
         this.DistributionAccountCode = DistributionAccountCode;
         this.TownCode = TownCode;
+        this.Zone = Zone;
+        this.Lifeliner = Lifeliner;
+        this.Item1 = Item1;
+    }
+
+    
+    public String getZone() {
+        return Zone;
+    }
+
+    public void setZone(String Zone) {
+        this.Zone = Zone;
+    }
+
+    public String getLifeliner() {
+        return Lifeliner;
+    }
+
+    public void setLifeliner(String Lifeliner) {
+        this.Lifeliner = Lifeliner;
+    }
+
+    public String getItem1() {
+        return Item1;
+    }
+
+    public void setItem1(String Item1) {
+        this.Item1 = Item1;
     }
 
     

@@ -87,7 +87,10 @@ public class ServiceAccountsDao {
                     rs.getString("Barangay"),
                     rs.getString("MemberConsumerId"),
                     rs.getString("DistributionAccountCode"),
-                    rs.getString("Town")
+                    rs.getString("Town"),
+                    rs.getString("Zone"),
+                    rs.getString("Lifeliner"),
+                    rs.getString("Item1")
                 );
 
                 ps.close();
@@ -167,7 +170,10 @@ public class ServiceAccountsDao {
                     rs.getString("Migrated"),
                     rs.getString("MemberConsumerId"),
                     rs.getString("DistributionAccountCode"),
-                    rs.getString("Town")
+                    rs.getString("Town"),
+                    rs.getString("Zone"),
+                    rs.getString("Lifeliner"),
+                    rs.getString("Item1")
                 );
 
                 ps.close();
@@ -246,7 +252,10 @@ public class ServiceAccountsDao {
                     rs.getString("Migrated"),
                     rs.getString("MemberConsumerId"),
                     rs.getString("DistributionAccountCode"),
-                    rs.getString("Town")
+                    rs.getString("Town"),
+                    rs.getString("Zone"),
+                    rs.getString("Lifeliner"),
+                    rs.getString("Item1")
                 );
                 serviceAccountses.add(account);
             }
@@ -356,7 +365,10 @@ public class ServiceAccountsDao {
                     rs.getString("Migrated"),
                     rs.getString("MemberConsumerId"),
                     rs.getString("DistributionAccountCode"),
-                    rs.getString("Town")
+                    rs.getString("Town"),
+                    rs.getString("Zone"),
+                    rs.getString("Lifeliner"),
+                    rs.getString("Item1")
                 );
                 serviceAccountses.add(account);
             }

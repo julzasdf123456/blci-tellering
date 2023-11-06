@@ -20,11 +20,14 @@ public class MultipleAccountBills {
     private String AmountDue;
     private String Surcharge;
     private String TotalAmountDue;
+    private boolean Removable;
+    private double ReconnectionFee;
+    private double ReconnectionFeeVAT;
 
     public MultipleAccountBills() {
     }
 
-    public MultipleAccountBills(String BillId, String AccountName, String AccountNumber, String AccountId, String Address, String BillingMonth, String DueDate, String AmountDue, String Surcharge, String TotalAmountDue) {
+    public MultipleAccountBills(String BillId, String AccountName, String AccountNumber, String AccountId, String Address, String BillingMonth, String DueDate, String AmountDue, String Surcharge, String TotalAmountDue, boolean Removable, double ReconnectionFee, double ReconnectionFeeVAT) {
         this.BillId = BillId;
         this.AccountName = AccountName;
         this.AccountNumber = AccountNumber;
@@ -35,6 +38,9 @@ public class MultipleAccountBills {
         this.AmountDue = AmountDue;
         this.Surcharge = Surcharge;
         this.TotalAmountDue = TotalAmountDue;
+        this.Removable = Removable;
+        this.ReconnectionFee = ReconnectionFee;
+        this.ReconnectionFeeVAT = ReconnectionFeeVAT;
     }
 
     public String getBillId() {
@@ -115,6 +121,30 @@ public class MultipleAccountBills {
 
     public void setTotalAmountDue(String TotalAmountDue) {
         this.TotalAmountDue = TotalAmountDue;
+    }
+
+    public boolean isRemovable() {
+        return Removable;
+    }
+
+    public void setRemovable(boolean Removable) {
+        this.Removable = Removable;
+    }
+
+    public double getReconnectionFee() {
+        return ReconnectionFee;
+    }
+
+    public void setReconnectionFee(double ReconnectionFee) {
+        this.ReconnectionFee = ReconnectionFee;
+    }
+
+    public double getReconnectionFeeVAT() {
+        return ReconnectionFeeVAT;
+    }
+
+    public void setReconnectionFeeVAT(double ReconnectionFeeVAT) {
+        this.ReconnectionFeeVAT = ReconnectionFeeVAT;
     }
     
     
