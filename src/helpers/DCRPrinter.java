@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
+import localdb.Preferences;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
 import pojos.DCRSummaryTransactions;
@@ -57,7 +58,7 @@ public class DCRPrinter {
     
     public static void printDcr(pojos.Login l, String date, List<DCRSummaryTransactions> list,
             List<PaidBills> powerBills, List<TransactionDetails> nonPowerBills, List<TransactionDetails> checkPayments, List<TransactionDetails> cancelledOrs,
-            List<PaidBills> checkSummary, double dcrTotalCorrected) {
+            List<PaidBills> checkSummary, double dcrTotalCorrected, Preferences preferences) {
         try {
             String filename = ConfigFileHelpers.REPORTS_FOLDER + "DCR-" + ObjectHelpers.getSqlDate() + "-" + l.getUsername() + ".pdf";
             
@@ -92,7 +93,7 @@ public class DCRPrinter {
             addCenteredParagraph(document, null, width, DCRSUMMARYTITLE, font);  
             
             addLeftParagraph(document, "TELLER:             " + l.getName(), font);
-            addLeftParagraph(document, "COLLECTION CENTER:  " + ConfigFileHelpers.getOffice(), font);
+            addLeftParagraph(document, "COLLECTION CENTER:  " + ConfigFileHelpers.getOffice(preferences), font);
             addLeftParagraph(document, "COLLECTION DATE:    " + date + "\n", font);
             
             populateDcrTable(dcrPage, font, document, list, dcrTotalCorrected);

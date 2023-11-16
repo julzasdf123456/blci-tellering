@@ -22,6 +22,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import localdb.Preferences;
 import pojos.Server;
 import pojos.TransactionDetails;
 
@@ -45,12 +46,12 @@ public class ORMaintenancePanel extends javax.swing.JPanel {
     /**
      * Creates new form ORMaintenance
      */
-    public ORMaintenancePanel(pojos.Login login) {
+    public ORMaintenancePanel(pojos.Login login, Preferences preferences) {
         this.login = login;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);

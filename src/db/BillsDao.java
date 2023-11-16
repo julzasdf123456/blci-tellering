@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import localdb.Preferences;
 import pojos.Bills;
 import pojos.Collectibles;
 import pojos.Ledger;
@@ -533,10 +534,10 @@ public class BillsDao {
         }
     }
     
-    public static double getInterest(Bills bill) {
+    public static double getInterest(Bills bill, Preferences preferences) {
         try {
             DatabaseConnection db = new DatabaseConnection();
-            Connection con = db.getDbConnectionFromDatabase(ConfigFileHelpers.getServer());
+            Connection con = db.getDbConnectionFromDatabase(ConfigFileHelpers.getServer(preferences));
             String latestRate = getLatestBillingMonthFromRates(con);
         
             long months = ChronoUnit.MONTHS.between(

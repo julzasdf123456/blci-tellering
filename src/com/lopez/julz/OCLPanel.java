@@ -5,6 +5,7 @@
  */
 package com.lopez.julz;
 
+import db.BillsDao;
 import db.CollectiblesDao;
 import db.DCRSummaryTransactionsDao;
 import db.DatabaseConnection;
@@ -61,6 +62,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import pojos.Collectibles;
 import pojos.DCRSummaryTransactions;
 import pojos.OCLMonthly;
@@ -109,21 +111,23 @@ public class OCLPanel extends javax.swing.JPanel {
     public Object[] oclColNames = {"*", "Month", "Amount To Pay"};
     
     public Collectibles collectible;
+    public List<Collectibles> termedPayments;
     public List<OCLMonthly> selectedList;
     
     /**
      * Creates new form OCLPanel
      */
-    public OCLPanel(pojos.Login login, String orNumber) {
+    public OCLPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.orNumber = orNumber;
         this.login = login;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
+        termedPayments = new ArrayList<>();
         
         accountNumberSearch.requestFocus();
         checkLists = new ArrayList<>();
@@ -193,6 +197,10 @@ public class OCLPanel extends javax.swing.JPanel {
         jLabel16 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         oclTable = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        termedPaymentProfiles = new javax.swing.JList<>();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
 
         jLabel1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/receipt_long_FILL1_wght400_GRAD0_opsz20.png"))); // NOI18N
@@ -205,10 +213,11 @@ public class OCLPanel extends javax.swing.JPanel {
 
         accountNumberSearch.setForeground(new java.awt.Color(204, 0, 0));
         try {
-            accountNumberSearch.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("##-#####-###")));
+            accountNumberSearch.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("#####-##")));
         } catch (java.text.ParseException ex) {
             ex.printStackTrace();
         }
+        accountNumberSearch.setText("");
         accountNumberSearch.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
         accountNumberSearch.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -501,6 +510,15 @@ public class OCLPanel extends javax.swing.JPanel {
         oclTable.setRowHeight(26);
         jScrollPane1.setViewportView(oclTable);
 
+        termedPaymentProfiles.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jScrollPane3.setViewportView(termedPaymentProfiles);
+
+        jLabel17.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel17.setText("Termed Payment Profiles");
+
+        jLabel18.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel18.setText("Termed Payments");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -551,9 +569,17 @@ public class OCLPanel extends javax.swing.JPanel {
                         .addComponent(jLabel13)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(acctStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 32, Short.MAX_VALUE))
+                        .addGap(0, 111, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel17))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel18)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jScrollPane1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -597,14 +623,21 @@ public class OCLPanel extends javax.swing.JPanel {
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel18))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3)
+                            .addComponent(jScrollPane1))))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void accountNumberSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_accountNumberSearchKeyReleased
         String acctNo = accountNumberSearch.getText().trim();
-        if (acctNo.length() == 12) {
+        if (acctNo.length() == 8) {
             getAccountByOldAccountNo(acctNo);
         }
     }//GEN-LAST:event_accountNumberSearchKeyReleased
@@ -834,6 +867,8 @@ public class OCLPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -846,6 +881,7 @@ public class OCLPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator4;
@@ -855,6 +891,7 @@ public class OCLPanel extends javax.swing.JPanel {
     private javax.swing.JFormattedTextField oclBalance;
     private javax.swing.JTable oclTable;
     private javax.swing.JTextField orNumberField;
+    private javax.swing.JList<String> termedPaymentProfiles;
     private javax.swing.JFormattedTextField totalAmountPaid;
     private javax.swing.JFormattedTextField totalAmountToPay;
     private javax.swing.JButton transactBtn;
@@ -875,7 +912,8 @@ public class OCLPanel extends javax.swing.JPanel {
             if (activeAccount != null) {
                 addCheckButton.setEnabled(true);
                 populateConsumerData();
-                getOclData();
+//                getOclData();
+                getTermedPayments();
                 cashPaymentField.setEnabled(true);
             } else {
                 addCheckButton.setEnabled(false);
@@ -1485,7 +1523,7 @@ public class OCLPanel extends javax.swing.JPanel {
                         /**
                          * PRINT HERE
                          */
-                        print(transaction, detailsList, login.getUsername());
+//                        print(transaction, detailsList, login.getUsername());
 
                        /**
                         * CLEAR AND RESET
@@ -1657,7 +1695,7 @@ public class OCLPanel extends javax.swing.JPanel {
                         /**
                          * PRINT HERE
                          */
-                        print(transaction, detailsList, login.getUsername());
+//                        print(transaction, detailsList, login.getUsername());
 
                        /**
                         * CLEAR AND RESET
@@ -1731,6 +1769,100 @@ public class OCLPanel extends javax.swing.JPanel {
         } catch (Exception e) {
             e.printStackTrace();
             Notifiers.showErrorMessage("Error Printing OR", e.getMessage());
+        }
+    }
+    
+    public void getTermedPayments() {
+        try {
+            termedPayments = BillsDao.getTermedPaymentProfiles(connection, activeAccount.getId());
+            
+            String listData[] = new String[termedPayments.size()];
+            for(int i=0; i<termedPayments.size(); i++) {
+                listData[i] = termedPayments.get(i).getNotes();
+            }
+            
+            termedPaymentProfiles.setListData(listData);
+            termedPaymentProfiles.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 1) {
+                        oclList.clear();
+                        oclTable.setModel(new DefaultTableModel());
+                        cashPaymentField.selectAll();
+                        cashPaymentField.requestFocus();
+                        cashPaymentField.setCaretPosition(0);
+                        cashPaymentField.setValue(0);
+                        totalAmountToPay.setValue(0);
+                        totalAmountPaid.setValue(0);
+                        
+                        oclList.addAll(OCLMonthlyDao.getUnpaidAndUnbilledOclListById(connection, termedPayments.get(termedPaymentProfiles.getSelectedIndex()).getId()));
+                        
+                        if (collectible != null) {
+                            oclBalance.setValue(Double.valueOf(collectible.getBalance()));
+                            monthsToPay.setText(oclList.size() + "");
+                        }
+
+                        Object[][] data = new Object[oclList.size()][oclColNames.length];
+                        for (int i=0; i<oclList.size(); i++) {
+                            data[i][0] = false;
+                            data[i][1] = oclList.get(i).getServicePeriod();
+                            data[i][2] = ObjectHelpers.roundTwo(oclList.get(i).getAmount());
+                        }
+
+                        oclModel = new DefaultTableModel(data, oclColNames) {
+                            @Override
+                            public Class getColumnClass(int column) {
+                                switch (column) {
+                                    case 0:
+                                        return Boolean.class;
+                                    case 1:
+                                        return String.class;
+                                    case 2:
+                                        return String.class;
+                                    default:
+                                        return null;
+                                }
+                            }    
+
+                            @Override
+                            public boolean isCellEditable(int row, int column) {
+                                if (column != 0) {
+                                    return false;
+                                } else {
+                                    return true;
+                                }                    
+                            }
+                        };
+
+                        oclTable.setModel(oclModel);
+                        oclTable.getColumnModel().getColumn(0).setMaxWidth(30);
+                        oclTable.getModel().addTableModelListener(new TableModelListener() {
+                            @Override
+                            public void tableChanged(TableModelEvent e) {
+                                try {
+                                    totalAmountToPay.setValue(getTotalAmount());
+                                    cashPaymentField.setValue(getTotalAmount());
+                                    totalAmountPaid.setValue(Double.valueOf(cashPaymentField.getValue().toString()));
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            cashPaymentField.selectAll();
+                                            cashPaymentField.requestFocus();
+                                            cashPaymentField.setCaretPosition(0);
+                                        }
+                                    });
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                    Notifiers.showErrorMessage("Error Adding To Payments", ex.getMessage());
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifiers.showErrorMessage("Error getting termed payments", e.getMessage());
         }
     }
 }

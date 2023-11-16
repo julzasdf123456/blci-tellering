@@ -70,6 +70,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import org.jdatepicker.JDatePicker;
 import pojos.BillMirror;
 import pojos.Bills;
@@ -99,6 +100,8 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     
     public DatabaseConnection db;
     public Connection connection;
+    
+    public Preferences preferences;
     
     /**
      * ACTIVE SELECTIONS
@@ -133,14 +136,15 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
     /**
      * Creates new form PowerBillsMultiplePanel
      */
-    public PowerBillsMultiplePanel(pojos.Login login, String orNumber) {
+    public PowerBillsMultiplePanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.orNumber = orNumber;
         this.login = login;
+        this.preferences = preferences;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
-        officeCode = ConfigFileHelpers.getOfficeCode();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
+        officeCode = ConfigFileHelpers.getOfficeCode(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -1040,7 +1044,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
                         }
                     } else {
                         if (searchField.getText().length() > 3) {
-                            List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText());
+                            List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText(), preferences);
                             int searchSize = results.size();
                             searchTableModel.setRowCount(searchSize);
                             for (int i=0; i<searchSize; i++) {
@@ -1505,7 +1509,7 @@ public class PowerBillsMultiplePanel extends javax.swing.JPanel {
                         accountId = addOns.get(index).getAccountId();
                     }
                     
-                    AccountBrowser browserPanel = new AccountBrowser(accountId);
+                    AccountBrowser browserPanel = new AccountBrowser(accountId, preferences);
                     
                     formDialog.add(browserPanel);
                     formDialog.pack();

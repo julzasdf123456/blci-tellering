@@ -64,6 +64,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import pojos.CheckPayments;
 import pojos.DCRSummaryTransactions;
 import pojos.ORAssigning;
@@ -101,18 +102,20 @@ public class PrepaymentPanel extends javax.swing.JPanel {
     DefaultTableModel checkModel;
     
     boolean isOrLocked = true;
+    public Preferences preferences;
 
     /**
      * Creates new form PrepaymentPanel
      */
-    public PrepaymentPanel(pojos.Login login, String orNumber) {
+    public PrepaymentPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.login = login;
         this.orNumber = orNumber;
+        this.preferences = preferences;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
-        officeCode = ConfigFileHelpers.getOfficeCode();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
+        officeCode = ConfigFileHelpers.getOfficeCode(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -892,7 +895,7 @@ public class PrepaymentPanel extends javax.swing.JPanel {
                 public void keyReleased(KeyEvent e) {
                     DefaultTableModel searchTableModel;
                     if (searchField.getText().length() > 3) {
-                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText());
+                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText(), preferences);
                         int searchSize = results.size();
                         Object[][] searchData = new Object[searchSize][searchCols.length];
                         for (int i=0; i<searchSize; i++) {

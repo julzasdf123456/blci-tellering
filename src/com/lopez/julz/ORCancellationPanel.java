@@ -33,6 +33,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import localdb.Preferences;
 import pojos.PaidBills;
 import pojos.Server;
 import pojos.TransactionDetails;
@@ -58,12 +59,12 @@ public class ORCancellationPanel extends javax.swing.JPanel {
     /**
      * Creates new form ORCancellationPanel
      */
-    public ORCancellationPanel(pojos.Login login) {
+    public ORCancellationPanel(pojos.Login login, Preferences preferences) {
         this.login = login;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);

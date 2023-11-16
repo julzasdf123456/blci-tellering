@@ -53,7 +53,6 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -63,6 +62,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import pojos.BAPAAdjustmentDetails;
 import pojos.Bills;
 import pojos.CheckPayments;
@@ -122,13 +122,13 @@ public class BAPAPaymentsPanel extends javax.swing.JPanel {
     Object[] columnNames = {"", "Account No", "Consumer Name", "Status", "Kwh Used", "Billing Mo.", "Bill No.", "Amount Due", "Discount", "Surcharge", "Net Amount Due"};
     DefaultTableModel model;
 
-    public BAPAPaymentsPanel(pojos.Login login, String orNumber) {
+    public BAPAPaymentsPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.login = login;
         this.orNumber = orNumber;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);

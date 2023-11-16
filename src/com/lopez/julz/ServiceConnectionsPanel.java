@@ -5,15 +5,11 @@
  */
 package com.lopez.julz;
 
-import db.BillOfMaterialsSummaryDao;
-import db.DCRSummaryTransactionsDao;
 import db.DatabaseConnection;
 import db.ORAssigningDao;
-import db.ParticularPaymentTransactionsDao;
 import db.PaymentOrderDao;
 import db.ServiceAccountsDao;
 import db.ServiceConnectionsDao;
-import db.TransactionDetailsDao;
 import db.TransactionIndexDao;
 import db.TransactionPaymentDetailsDao;
 import helpers.ConfigFileHelpers;
@@ -58,11 +54,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
-import pojos.BillOfMaterialsSummary;
-import pojos.DCRSummaryTransactions;
+import localdb.Preferences;
 import pojos.Login;
 import pojos.ORAssigning;
-import pojos.ParticularPaymentTransactions;
 import pojos.PaymentOrder;
 import pojos.Server;
 import pojos.ServiceAccounts;
@@ -112,13 +106,13 @@ public class ServiceConnectionsPanel extends javax.swing.JPanel {
     Object[] checkColNames = {"Bank", "Check No", "Amount"};
     DefaultTableModel checkModel;
     
-    public ServiceConnectionsPanel(Login login, String orNumber) {
+    public ServiceConnectionsPanel(Login login, String orNumber, Preferences preferences) {
         this.login = login;
         this.orNumber = orNumber;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);

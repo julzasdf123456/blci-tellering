@@ -36,6 +36,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import localdb.Preferences;
 import pojos.DCRSummaryTransactions;
 import pojos.PaidBills;
 import pojos.Server;
@@ -83,13 +84,16 @@ public class DCRPanel extends javax.swing.JPanel {
     double checkTotal = 0;
     double dcrSummaryTotal = 0;
     double dcrCorrected = 0;
+    
+    public Preferences preferences;
    
-    public DCRPanel(pojos.Login login) {
+    public DCRPanel(pojos.Login login, Preferences preferences) {
         this.login = login;
+        this.preferences = preferences;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -548,7 +552,7 @@ public class DCRPanel extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         pojos.Login l = UsersDao.getLogin(connection, login.getId());
-        DCRPrinter.printDcr(l, dcrDate.getFormattedTextField().getText(), dcrSummary, powerBills, nonPowerBills, checkPayments, cancelledORs, checkSummary, dcrCorrected);
+        DCRPrinter.printDcr(l, dcrDate.getFormattedTextField().getText(), dcrSummary, powerBills, nonPowerBills, checkPayments, cancelledORs, checkSummary, dcrCorrected, preferences);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void dcrDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dcrDateActionPerformed

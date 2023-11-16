@@ -147,4 +147,31 @@ public class OCLMonthlyDao {
             return null;
         }
     }
+    
+     public static List<OCLMonthly> getUnpaidAndUnbilledOclListById(Connection con, String id) {
+        try {
+            List<OCLMonthly> list = new ArrayList<>();
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM  Billing_ArrearsLedgerDistribution WHERE CollectibleId = ? AND IsBilled IS NULL AND IsPaid IS NULL ORDER BY ServicePeriod");
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new OCLMonthly(
+                    rs.getString("id"),
+                    rs.getString("AccountNumber"),
+                    rs.getString("ServicePeriod"),
+                    rs.getString("Amount"),
+                    rs.getString("IsBilled"),
+                    rs.getString("IsPaid"),
+                    rs.getString("LinkedBillNumber"),
+                    rs.getString("Notes"),
+                    rs.getString("created_at"),
+                    rs.getString("updated_at")
+                ));
+            }            
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

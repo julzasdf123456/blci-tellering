@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import localdb.Preferences;
 import pojos.GroupBillingAccounts;
 import pojos.ServiceAccounts;
 
@@ -190,7 +191,7 @@ public class ServiceAccountsDao {
         }
     }
     
-    public static List<ServiceAccounts> search(Connection con, String regex) {
+    public static List<ServiceAccounts> search(Connection con, String regex, Preferences preferences) {
         try {
             List<ServiceAccounts> serviceAccountses = new ArrayList<>();
             PreparedStatement ps = con.prepareStatement("SELECT " + accountsTableName + ".*, " + townsTableName + ".Town as TownName, " + barangaysTableName + ".Barangay as BarangayName FROM " 
@@ -198,7 +199,7 @@ public class ServiceAccountsDao {
                     townsTableName + " ON " + accountsTableName + ".Town = " + townsTableName + ".id LEFT JOIN " +
                     barangaysTableName + " ON " + accountsTableName + ".Barangay = " + barangaysTableName + ".id " +
                     "WHERE OldAccountNo LIKE '%" + regex + "%' OR " + accountsTableName + ".id LIKE '%" + regex + "%' OR ServiceAccountName LIKE '%" + regex + "%' "
-                            + "ORDER BY CASE WHEN Billing_ServiceAccounts.Town='" + ConfigFileHelpers.getOfficeCode() + "' THEN '1' ELSE Billing_ServiceAccounts.Town END DESC");
+                            + "ORDER BY CASE WHEN Billing_ServiceAccounts.Town='" + ConfigFileHelpers.getOfficeCode(preferences) + "' THEN '1' ELSE Billing_ServiceAccounts.Town END DESC");
             
             ResultSet rs = ps.executeQuery();
             while(rs.next()) {

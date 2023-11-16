@@ -86,6 +86,7 @@ import pojos.ServiceAccounts;
 import java.util.stream.IntStream;
 import java.util.Objects;
 import javax.swing.JOptionPane;
+import localdb.Preferences;
 
 /**
  *
@@ -132,15 +133,17 @@ public class PowerBillsPanel extends javax.swing.JPanel {
     DefaultTableModel checkModel;
     
     boolean isOrLocked = true;
+    public Preferences preferences;
    
-    public PowerBillsPanel(pojos.Login login, String orNumber) {
+    public PowerBillsPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.orNumber = orNumber;
         this.login = login;
+        this.preferences = preferences;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
-        officeCode = ConfigFileHelpers.getOfficeCode();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
+        officeCode = ConfigFileHelpers.getOfficeCode(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -2639,7 +2642,7 @@ public class PowerBillsPanel extends javax.swing.JPanel {
                 public void keyReleased(KeyEvent e) {
                     DefaultTableModel searchTableModel;
                     if (searchField.getText().length() > 3) {
-                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText());
+                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText(), preferences);
                         int searchSize = results.size();
                         Object[][] searchData = new Object[searchSize][searchCols.length];
                         for (int i=0; i<searchSize; i++) {

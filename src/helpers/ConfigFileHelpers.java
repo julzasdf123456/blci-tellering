@@ -9,8 +9,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import localdb.Preferences;
+import localdb.PreferencesDao;
+import localdb.SQLiteDbConnection;
 import pojos.Server;
 
 /**
@@ -27,20 +31,30 @@ public class ConfigFileHelpers {
     public static String OR_VIEW_URL = "http://" + getServerIp() + ":8000/transaction_indices/browse-ors-view/";
     public static String VIEW_ACCOUNT_URL = "http://" + getServerIp() + ":8000/serviceAccounts/";
     
-    public static String getOffice () {
-        try {
-            String office = "";
-            File file=new File(OTHER_CONFIG);    //creates a new file instance  
-            FileReader fr=new FileReader(file);   //reads the file  
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
-            String line;  
-            if((line=br.readLine())!=null) {   
-                office = line;
-            } 
-            
-            fr.close();    //closes the stream and release the resources   
-            
-            return office;
+//    public static String getOffice () {
+//        try {
+//            String office = "";
+//            File file=new File(OTHER_CONFIG);    //creates a new file instance  
+//            FileReader fr=new FileReader(file);   //reads the file  
+//            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
+//            String line;  
+//            if((line=br.readLine())!=null) {   
+//                office = line;
+//            } 
+//            
+//            fr.close();    //closes the stream and release the resources   
+//            
+//            return office;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Notifiers.showErrorMessage("Error Getting Office", e.getMessage());
+//            return null;
+//        }
+//    }
+    
+    public static String getOffice (Preferences preferences) {
+        try {            
+            return preferences.getOffice();
         } catch (Exception e) {
             e.printStackTrace();
             Notifiers.showErrorMessage("Error Getting Office", e.getMessage());
@@ -48,24 +62,34 @@ public class ConfigFileHelpers {
         }
     }
     
-    public static String getOfficeCode () {
+//    public static String getOfficeCode () {
+//        try {
+//            String office = "";
+//            File file=new File(OTHER_CONFIG);    //creates a new file instance  
+//            FileReader fr=new FileReader(file);   //reads the file  
+//            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
+//            String line;  
+//            int i=0;
+//            while((line=br.readLine())!=null) {  
+//                if (i==1) {
+//                    office = line;
+//                }                
+//                i++;
+//            } 
+//            
+//            fr.close();    //closes the stream and release the resources   
+//            
+//            return office;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Notifiers.showErrorMessage("Error Getting Office", e.getMessage());
+//            return null;
+//        }
+//    }
+    
+    public static String getOfficeCode (Preferences preferences) {
         try {
-            String office = "";
-            File file=new File(OTHER_CONFIG);    //creates a new file instance  
-            FileReader fr=new FileReader(file);   //reads the file  
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
-            String line;  
-            int i=0;
-            while((line=br.readLine())!=null) {  
-                if (i==1) {
-                    office = line;
-                }                
-                i++;
-            } 
-            
-            fr.close();    //closes the stream and release the resources   
-            
-            return office;
+            return preferences.getOfficeCode();
         } catch (Exception e) {
             e.printStackTrace();
             Notifiers.showErrorMessage("Error Getting Office", e.getMessage());
@@ -73,28 +97,28 @@ public class ConfigFileHelpers {
         }
     }
     
-    public static String getServerName() {
-        try {
-            String server = "";
-            File file=new File(SERVER);    //creates a new file instance  
-            FileReader fr=new FileReader(file);   //reads the file  
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
-            StringBuffer sb=new StringBuffer();    //constructs a string buffer with no characters  
-            String line;  
-            while((line=br.readLine())!=null) {   
-                String[] lineTab = line.split(" ");
-                server = lineTab[0];
-            } 
-            
-            fr.close();    //closes the stream and release the resources   
-            
-            return server;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Notifiers.showErrorMessage("Error Getting Server", e.getMessage());
-            return null;
-        }
-    }
+//    public static String getServerName() {
+//        try {
+//            String server = "";
+//            File file=new File(SERVER);    //creates a new file instance  
+//            FileReader fr=new FileReader(file);   //reads the file  
+//            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
+//            StringBuffer sb=new StringBuffer();    //constructs a string buffer with no characters  
+//            String line;  
+//            while((line=br.readLine())!=null) {   
+//                String[] lineTab = line.split(" ");
+//                server = lineTab[0];
+//            } 
+//            
+//            fr.close();    //closes the stream and release the resources   
+//            
+//            return server;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Notifiers.showErrorMessage("Error Getting Server", e.getMessage());
+//            return null;
+//        }
+//    }
     
     public static void saveLoginInfo(String username, String id, String password) {
         try {
@@ -117,22 +141,38 @@ public class ConfigFileHelpers {
         }
     }
     
-    public static Server getServer() {
+//    public static Server getServer() {
+//        try {
+//            Server server = new Server();
+//            File file=new File(SERVER);    //creates a new file instance  
+//            FileReader fr = new FileReader(file);   //reads the file  
+//            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
+//            String line;  
+//            while((line=br.readLine())!=null) {   
+//                String[] lineTab = line.split(" ");
+//                server.setServerName(lineTab[0]);
+//                server.setDatabase(lineTab[1]);
+//                server.setUsername(lineTab[2]);
+//                server.setPassword(lineTab[3]);
+//            } 
+//            
+//            fr.close();    //closes the stream and release the resources   
+//            
+//            return server;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Notifiers.showErrorMessage("Error Getting Server", e.getMessage());
+//            return null;
+//        }
+//    }
+    
+    public static Server getServer(Preferences preferences) {
         try {
             Server server = new Server();
-            File file=new File(SERVER);    //creates a new file instance  
-            FileReader fr = new FileReader(file);   //reads the file  
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
-            String line;  
-            while((line=br.readLine())!=null) {   
-                String[] lineTab = line.split(" ");
-                server.setServerName(lineTab[0]);
-                server.setDatabase(lineTab[1]);
-                server.setUsername(lineTab[2]);
-                server.setPassword(lineTab[3]);
-            } 
-            
-            fr.close();    //closes the stream and release the resources   
+            server.setServerName(preferences.getServerHostName());
+            server.setDatabase(preferences.getDatabaseName());
+            server.setUsername(preferences.getDatabaseSuperAdminUsername());
+            server.setPassword(preferences.getDatabaseSuperAdminPassword());
             
             return server;
         } catch (Exception e) {
@@ -143,7 +183,7 @@ public class ConfigFileHelpers {
     }
     
     public static void main(String[] args) {
-        System.out.println(getOfficeCode() + "" + getOffice());
+        
     }
     
     public static String getCashierHeadId () {
@@ -171,24 +211,39 @@ public class ConfigFileHelpers {
         }
     }
     
+//    public static String getServerIp () {
+//        try {
+//            String office = "";
+//            File file=new File(OTHER_CONFIG);    //creates a new file instance  
+//            FileReader fr=new FileReader(file);   //reads the file  
+//            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
+//            String line;  
+//            int i=0;
+//            while((line=br.readLine())!=null) {  
+//                if (i==3) {
+//                    office = line;
+//                }                
+//                i++;
+//            } 
+//            
+//            fr.close();    //closes the stream and release the resources   
+//            
+//            return office;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Notifiers.showErrorMessage("Error Getting Server IP Address", e.getMessage());
+//            return null;
+//        }
+//    }
+    
     public static String getServerIp () {
         try {
-            String office = "";
-            File file=new File(OTHER_CONFIG);    //creates a new file instance  
-            FileReader fr=new FileReader(file);   //reads the file  
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream  
-            String line;  
-            int i=0;
-            while((line=br.readLine())!=null) {  
-                if (i==3) {
-                    office = line;
-                }                
-                i++;
-            } 
+            SQLiteDbConnection localdb = new SQLiteDbConnection();
+            localdb.createTables();
+            Connection localConnection = localdb.getCon();
+            Preferences preferences = PreferencesDao.getPreferences(localConnection); 
             
-            fr.close();    //closes the stream and release the resources   
-            
-            return office;
+            return preferences.getHostWebIPAddress();
         } catch (Exception e) {
             e.printStackTrace();
             Notifiers.showErrorMessage("Error Getting Server IP Address", e.getMessage());

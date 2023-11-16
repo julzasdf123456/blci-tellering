@@ -67,6 +67,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import pojos.Bills;
 import pojos.CheckPayments;
 import pojos.Collectibles;
@@ -118,13 +119,13 @@ public class GroupPaymentsPanel extends javax.swing.JPanel {
     /**
      * Creates new form GroupPaymentsPanel
      */
-    public GroupPaymentsPanel(pojos.Login login, String orNumber) {
+    public GroupPaymentsPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.login = login;
         this.orNumber = orNumber;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);

@@ -22,7 +22,6 @@ import helpers.ObjectHelpers;
 import helpers.PowerBillPrint;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -46,7 +45,6 @@ import java.awt.print.Paper;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.math.RoundingMode;
-import java.net.URI;
 import java.sql.Connection;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -77,6 +75,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
 import pojos.BillMirror;
 import pojos.Bills;
 import pojos.CheckPayments;
@@ -135,17 +134,20 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
     
     boolean isOrLocked = true;
 
+    public Preferences preferences;
+    
     /**
      * Creates new form PowerBillsPartialPanel
      */
-    public PowerBillsPartialPanel(pojos.Login login, String orNumber) {
+    public PowerBillsPartialPanel(pojos.Login login, String orNumber, Preferences preferences) {
         this.orNumber = orNumber;
         this.login = login;
+        this.preferences = preferences;
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
-        officeCode = ConfigFileHelpers.getOfficeCode();
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
+        officeCode = ConfigFileHelpers.getOfficeCode(preferences);
     
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -710,7 +712,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
         formDialog.setLocation(50, 50);
         formDialog.setTitle("View Account");
 
-        AccountBrowser browserPanel = new AccountBrowser(activeAccount.getId());
+        AccountBrowser browserPanel = new AccountBrowser(activeAccount.getId(), preferences);
 
         formDialog.add(browserPanel);
         formDialog.pack();
@@ -2113,7 +2115,7 @@ public class PowerBillsPartialPanel extends javax.swing.JPanel {
                 public void keyReleased(KeyEvent e) {
                     DefaultTableModel searchTableModel;
                     if (searchField.getText().length() > 3) {
-                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText());
+                        List<ServiceAccounts> results = ServiceAccountsDao.search(connection, searchField.getText(), preferences);
                         int searchSize = results.size();
                         Object[][] searchData = new Object[searchSize][searchCols.length];
                         for (int i=0; i<searchSize; i++) {

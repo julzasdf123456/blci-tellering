@@ -7,11 +7,20 @@ package com.lopez.julz;
 
 import api.RequestPlaceHolder;
 import api.RetrofitBuilder;
-import helpers.Auth;
 import helpers.ConfigFileHelpers;
 import helpers.Notifiers;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.sql.Connection;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import localdb.Preferences;
+import localdb.PreferencesDao;
+import localdb.SQLiteDbConnection;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -27,14 +36,26 @@ public class Login extends javax.swing.JFrame {
      */
     public RetrofitBuilder retrofitBuilder;
     private RequestPlaceHolder requestPlaceHolder;
+    public SQLiteDbConnection localdb;
+    public Preferences preferences;
+    public Connection localConnection;
     
     public Login() {
         initComponents();
         setLocationRelativeTo(this);
         setResizable(false);
         
+        localdb = new SQLiteDbConnection();
+        localdb.createTables();
+        localConnection = localdb.getCon();
+        preferences = PreferencesDao.getPreferences(localConnection);
+        
         retrofitBuilder = new RetrofitBuilder();
         requestPlaceHolder = retrofitBuilder.getRetrofit().create(RequestPlaceHolder.class);
+        
+        if (preferences != null) {
+            username.setText(preferences.getUsername());
+        }
     }
 
     /**
@@ -55,6 +76,8 @@ public class Login extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        preferencesBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("BLCI Cashiering | Desktop Edition");
@@ -95,6 +118,15 @@ public class Login extends javax.swing.JFrame {
         jLabel4.setFont(new java.awt.Font("Calibri Light", 0, 18)); // NOI18N
         jLabel4.setText("Tellering and Cashiering System");
 
+        preferencesBtn.setFont(new java.awt.Font("Calibri Light", 0, 12)); // NOI18N
+        preferencesBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/admin_panel_settings_FILL0_wght400_GRAD0_opsz20.png"))); // NOI18N
+        preferencesBtn.setText("Preferences");
+        preferencesBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                preferencesBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -102,19 +134,22 @@ public class Login extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator2)
                     .addComponent(username)
                     .addComponent(password)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 246, Short.MAX_VALUE)
-                        .addComponent(loginButton))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(jLabel4))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jSeparator1))
+                        .addGap(0, 89, Short.MAX_VALUE))
+                    .addComponent(jSeparator1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(loginButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(preferencesBtn, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -136,7 +171,11 @@ public class Login extends javax.swing.JFrame {
                 .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(loginButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(preferencesBtn)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -227,6 +266,21 @@ public class Login extends javax.swing.JFrame {
         }   
     }//GEN-LAST:event_loginButtonActionPerformed
 
+    private void preferencesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesBtnActionPerformed
+//        if (preferences != null) {
+//            
+//            
+//        } else {
+//            String password = "BLCI2023";
+//            if (JOptionPane.showInputDialog(null, "Since you have yet to assign any preferences, please input ADMIN APP PASWORD to continue:", "Input App Password", JOptionPane.INFORMATION_MESSAGE).equals(password)) {
+//                showPreferences();
+//            } else {
+//                Notifiers.showErrorMessage("Authentication Error", "Wrong password inputted!");
+//            }
+//        }
+        showPreferences();
+    }//GEN-LAST:event_preferencesBtnActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -271,8 +325,29 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JButton loginButton;
     private javax.swing.JPasswordField password;
+    private javax.swing.JButton preferencesBtn;
     private javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
+
+    public void showPreferences() {
+        try {
+            JDialog prefDialog = new JDialog();
+            Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (int) size.getWidth();
+            int y = (int) size.getHeight();
+            prefDialog.setLocation(x/5, y/5);
+            prefDialog.setTitle("Preferences");
+            
+            PreferencesPanel prefPanel = new PreferencesPanel();
+            
+            prefDialog.add(prefPanel);
+            prefDialog.pack();
+            prefDialog.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -23,7 +23,6 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.print.Book;
@@ -49,6 +48,9 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.NumberFormatter;
+import localdb.Preferences;
+import localdb.PreferencesDao;
+import localdb.SQLiteDbConnection;
 import pojos.Bills;
 import pojos.ORAssigning;
 import pojos.PaidBills;
@@ -77,6 +79,10 @@ public class MainFrame extends javax.swing.JFrame {
     public DatabaseConnection db;
     public Connection connection;
     
+    public SQLiteDbConnection localdb;
+    public Preferences preferences;
+    public Connection localConnection;
+    
     public pojos.Login login;
     
     public ORAssigning currentOr;
@@ -95,8 +101,13 @@ public class MainFrame extends javax.swing.JFrame {
         // GET LOGGED USER
         login = Auth.getActiveUser();
         
-        server = ConfigFileHelpers.getServer();
-        office = ConfigFileHelpers.getOffice();
+        localdb = new SQLiteDbConnection();
+        localdb.createTables();
+        localConnection = localdb.getCon();
+        preferences = PreferencesDao.getPreferences(localConnection);
+        
+        server = ConfigFileHelpers.getServer(preferences);
+        office = ConfigFileHelpers.getOffice(preferences);
         
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
@@ -108,17 +119,17 @@ public class MainFrame extends javax.swing.JFrame {
         // TEST IF OR EXISTS ON THIS USER
         currentOr = ORAssigningDao.getCurrentOR(connection, login.getId());
         if (currentOr != null) {
-            powerBillsPanel = new PowerBillsPartialPanel(login, null);
-            powerBillsMultiplePanel = new PowerBillsMultiplePanel(login, null);
-            bAPAPaymentsPanel = new BAPAPaymentsPanel(login, null);
-            serviceConnectionsPanel = new ServiceConnectionsPanel(login, null);
-            dcrPanel = new DCRPanel(login);
-            oclPanel = new OCLPanel(login, null);
-            ormanMaintenance = new ORMaintenancePanel(login);
-            miscellaneousPanel = new MiscellaneousPanel(login, null);
-            cancellationPanel = new ORCancellationPanel(login);
-            prepaymentPanel = new PrepaymentPanel(login, null);
-            groupPaymentsPanel = new GroupPaymentsPanel(login, null);
+            powerBillsPanel = new PowerBillsPartialPanel(login, null, preferences);
+            powerBillsMultiplePanel = new PowerBillsMultiplePanel(login, null, preferences);
+            bAPAPaymentsPanel = new BAPAPaymentsPanel(login, null, preferences);
+            serviceConnectionsPanel = new ServiceConnectionsPanel(login, null, preferences);
+            dcrPanel = new DCRPanel(login, preferences);
+            oclPanel = new OCLPanel(login, null, preferences);
+            ormanMaintenance = new ORMaintenancePanel(login, preferences);
+            miscellaneousPanel = new MiscellaneousPanel(login, null, preferences);
+            cancellationPanel = new ORCancellationPanel(login, preferences);
+            prepaymentPanel = new PrepaymentPanel(login, null, preferences);
+            groupPaymentsPanel = new GroupPaymentsPanel(login, null, preferences);
 
     //        mainSplitPane.setRightComponent(dcrPanel); // pwerbillpanel
             mainSplitPane.setRightComponent(powerBillsMultiplePanel);
@@ -130,17 +141,17 @@ public class MainFrame extends javax.swing.JFrame {
         } else {
             String startOr = JOptionPane.showInputDialog(null, "Because you haven't recorded any payment yet, you are required to input your initial OR Number.", "OR Number Initialization", JOptionPane.WARNING_MESSAGE);
             if (startOr != null) {
-                powerBillsPanel = new PowerBillsPartialPanel(login, startOr);
-                powerBillsMultiplePanel = new PowerBillsMultiplePanel(login, startOr);
-                bAPAPaymentsPanel = new BAPAPaymentsPanel(login, startOr);
-                serviceConnectionsPanel = new ServiceConnectionsPanel(login, startOr);
-                dcrPanel = new DCRPanel(login);
-                oclPanel = new OCLPanel(login, startOr);
-                ormanMaintenance = new ORMaintenancePanel(login);
-                miscellaneousPanel = new MiscellaneousPanel(login, startOr);
-                cancellationPanel = new ORCancellationPanel(login);
-                prepaymentPanel = new PrepaymentPanel(login, startOr);
-                groupPaymentsPanel = new GroupPaymentsPanel(login, startOr);
+                powerBillsPanel = new PowerBillsPartialPanel(login, startOr, preferences);
+                powerBillsMultiplePanel = new PowerBillsMultiplePanel(login, startOr, preferences);
+                bAPAPaymentsPanel = new BAPAPaymentsPanel(login, startOr, preferences);
+                serviceConnectionsPanel = new ServiceConnectionsPanel(login, startOr, preferences);
+                dcrPanel = new DCRPanel(login, preferences);
+                oclPanel = new OCLPanel(login, startOr, preferences);
+                ormanMaintenance = new ORMaintenancePanel(login, preferences);
+                miscellaneousPanel = new MiscellaneousPanel(login, startOr, preferences);
+                cancellationPanel = new ORCancellationPanel(login, preferences);
+                prepaymentPanel = new PrepaymentPanel(login, startOr, preferences);
+                groupPaymentsPanel = new GroupPaymentsPanel(login, startOr, preferences);
                 
                 //        mainSplitPane.setRightComponent(dcrPanel); // pwerbillpanel
                 mainSplitPane.setRightComponent(powerBillsMultiplePanel);
@@ -155,8 +166,9 @@ public class MainFrame extends javax.swing.JFrame {
             }
         }
         
-        
-        serverLabel.setText("SERVER: " + ConfigFileHelpers.getServerName());
+        if (preferences != null) {
+            serverLabel.setText("SERVER: " + preferences.getServerHostName());
+        }
         
         showClock();
     }
@@ -198,6 +210,8 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         reprintOR = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        preferencesMenu = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -301,6 +315,7 @@ public class MainFrame extends javax.swing.JFrame {
         groupPayments.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/diversity_3_FILL1_wght400_GRAD0_opsz20.png"))); // NOI18N
         groupPayments.setText("Group Payments");
         groupPayments.setToolTipText("");
+        groupPayments.setEnabled(false);
         groupPayments.setFocusable(false);
         groupPayments.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
         groupPayments.setMargin(new java.awt.Insets(5, 5, 5, 5));
@@ -333,7 +348,7 @@ public class MainFrame extends javax.swing.JFrame {
         oclPaymentsMenu.setBackground(new java.awt.Color(255, 255, 255));
         oclPaymentsMenu.setFont(new java.awt.Font("Arial Rounded MT Bold", 0, 12)); // NOI18N
         oclPaymentsMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/receipt_long_FILL1_wght400_GRAD0_opsz20.png"))); // NOI18N
-        oclPaymentsMenu.setText("OCL Payments");
+        oclPaymentsMenu.setText("Termed Payments");
         oclPaymentsMenu.setToolTipText("");
         oclPaymentsMenu.setFocusable(false);
         oclPaymentsMenu.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
@@ -463,7 +478,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator1)
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
+                    .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                     .addComponent(timeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(serverLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(menuPanelLayout.createSequentialGroup()
@@ -513,6 +528,15 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(reprintOR);
+        jMenu1.add(jSeparator3);
+
+        preferencesMenu.setText("Preferences");
+        preferencesMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                preferencesMenuActionPerformed(evt);
+            }
+        });
+        jMenu1.add(preferencesMenu);
 
         jMenuBar1.add(jMenu1);
 
@@ -796,17 +820,6 @@ public class MainFrame extends javax.swing.JFrame {
         dummyBtn = prepaymentDeposits;
     }//GEN-LAST:event_prepaymentDepositsActionPerformed
 
-    private void groupPaymentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupPaymentsActionPerformed
-        mainSplitPane.setRightComponent(groupPaymentsPanel);
-        groupPaymentsPanel.fetchOR();
-        
-        dummyBtn.setForeground(Color.black);
-        dummyBtn.setBorder(logoutBtn.getBorder());
-        groupPayments.setForeground(Color.decode("#00968b"));
-        groupPayments.setBorder(new LineBorder(Color.decode("#00968b"), 1, true));
-        dummyBtn = groupPayments;
-    }//GEN-LAST:event_groupPaymentsActionPerformed
-
     private void reprintORActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reprintORActionPerformed
         JDialog reprintORDialog = new JDialog(this);
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
@@ -976,6 +989,21 @@ public class MainFrame extends javax.swing.JFrame {
         dummyBtn = billsPaymentMultiple;
     }//GEN-LAST:event_billsPaymentMultipleActionPerformed
 
+    private void groupPaymentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupPaymentsActionPerformed
+        mainSplitPane.setRightComponent(groupPaymentsPanel);
+        groupPaymentsPanel.fetchOR();
+
+        dummyBtn.setForeground(Color.black);
+        dummyBtn.setBorder(logoutBtn.getBorder());
+        groupPayments.setForeground(Color.decode("#00968b"));
+        groupPayments.setBorder(new LineBorder(Color.decode("#00968b"), 1, true));
+        dummyBtn = groupPayments;
+    }//GEN-LAST:event_groupPaymentsActionPerformed
+
+    private void preferencesMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferencesMenuActionPerformed
+        showPreferences();
+    }//GEN-LAST:event_preferencesMenuActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1019,6 +1047,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton logoutBtn;
     private javax.swing.JPanel mainPanel;
@@ -1028,6 +1057,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton oclPaymentsMenu;
     private javax.swing.JButton orCancellation;
     private javax.swing.JButton orMaintenance;
+    private javax.swing.JMenuItem preferencesMenu;
     private javax.swing.JButton prepaymentDeposits;
     private javax.swing.JMenuItem reprintOR;
     private javax.swing.JLabel serverLabel;
@@ -1066,6 +1096,25 @@ public class MainFrame extends javax.swing.JFrame {
             });
             timer.setInitialDelay(1);
             timer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void showPreferences() {
+        try {
+            JDialog prefDialog = new JDialog();
+            Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (int) size.getWidth();
+            int y = (int) size.getHeight();
+            prefDialog.setLocation(x/5, y/5);
+            prefDialog.setTitle("Preferences");
+            
+            PreferencesPanel prefPanel = new PreferencesPanel();
+            
+            prefDialog.add(prefPanel);
+            prefDialog.pack();
+            prefDialog.setVisible(true);
         } catch (Exception e) {
             e.printStackTrace();
         }

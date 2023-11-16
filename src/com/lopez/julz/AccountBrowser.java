@@ -23,6 +23,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import localdb.Preferences;
 import pojos.Collectibles;
 import pojos.Ledger;
 import pojos.OCLMonthly;
@@ -50,10 +51,10 @@ public class AccountBrowser extends javax.swing.JPanel {
     public List<Collectibles> termedPayments;
     public List<OCLMonthly> termedPaymentAmmortizations;
     
-    public AccountBrowser(String accountId) {
+    public AccountBrowser(String accountId, Preferences preferences) {
         initComponents();
         
-        server = ConfigFileHelpers.getServer();
+        server = ConfigFileHelpers.getServer(preferences);
         db = new DatabaseConnection();
         connection = db.getDbConnectionFromDatabase(server);
         
